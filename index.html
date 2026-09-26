@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ئامادەبوونی منداڵەکەم</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2C5444">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ئامادەبوونی منداڵ">
+<style>
+  :root{
+    --primary:#2C5444; --primary-dark:#1C3A2E; --accent:#E0A458;
+    --bg:#F2F4F1; --surface:#FFFFFF; --ink:#1F2A24; --muted:#6B776F;
+    --present:#2F9E6B; --absent:#C0392B; --forgot:#3498DB; --leave:#D4A017; --waiting:#8E9992;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:'Segoe UI',Tahoma,Arial,sans-serif;min-height:100%;}
+  body{padding-bottom:40px;}
+  header{background:var(--primary);color:#fff;padding:18px 16px 22px;
+    border-radius:0 0 22px 22px;box-shadow:0 4px 14px rgba(0,0,0,.15);}
+  header h1{margin:0 0 4px;font-size:19px;}
+  header .date{font-size:13px;opacity:.85;}
+  .container{max-width:640px;margin:0 auto;padding:0 14px;}
+  .add-btn{display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--accent);color:var(--primary-dark);font-weight:bold;
+    border:none;border-radius:14px;padding:12px;width:100%;margin-top:16px;
+    font-size:15px;cursor:pointer;}
+  .add-btn:active{opacity:.85;}
+  .empty{text-align:center;color:var(--muted);padding:60px 10px;font-size:14px;}
+  .card{background:var(--surface);border-radius:16px;padding:14px;margin-top:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;gap:12px;align-items:center;cursor:pointer;}
+  .avatar{width:54px;height:54px;border-radius:14px;background:var(--primary);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;
+    font-weight:bold;flex-shrink:0;object-fit:cover;}
+  .card .info{flex:1;min-width:0;}
+  .card .name{font-weight:bold;font-size:15px;}
+  .card .cls{color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;
+    font-size:12px;font-weight:bold;color:#fff;margin-top:6px;}
+  .unlink{background:none;border:none;color:var(--muted);font-size:18px;padding:6px;cursor:pointer;}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
+    align-items:flex-end;justify-content:center;z-index:50;}
+  .overlay.open{display:flex;}
+  .sheet{background:var(--surface);width:100%;max-width:640px;border-radius:22px 22px 0 0;
+    padding:20px 18px 26px;max-height:88vh;overflow-y:auto;}
+  .sheet h2{margin:0 0 14px;font-size:17px;color:var(--primary-dark);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .field input, .field textarea{width:100%;padding:11px;border-radius:10px;
+    border:1px solid #dfe3e0;font-size:14px;font-family:inherit;background:#fafbfa;}
+  .field textarea{resize:vertical;min-height:60px;}
+  .err{color:var(--absent);font-size:12.5px;margin-top:6px;}
+  .btn-row{display:flex;gap:10px;margin-top:6px;}
+  .btn{flex:1;padding:12px;border-radius:12px;border:none;font-size:14.5px;
+    font-weight:bold;cursor:pointer;}
+  .btn.primary{background:var(--primary);color:#fff;}
+  .btn.ghost{background:#eef1ef;color:var(--ink);}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .chip{padding:8px 12px;border-radius:20px;background:#eef1ef;font-size:13px;cursor:pointer;
+    border:1px solid transparent;}
+  .chip.sel{background:var(--primary);color:#fff;}
+  .days-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .days-row button{width:34px;height:34px;border-radius:50%;border:1px solid #dfe3e0;
+    background:#fff;font-size:16px;cursor:pointer;}
+
+  .detail-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .detail-header .back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;}
+  .today-card{background:var(--surface);border-radius:18px;padding:18px;margin-top:14px;
+    text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  .today-card .avatar{width:78px;height:78px;font-size:26px;margin:0 auto 10px;border-radius:20px;}
+  .status-line{font-size:15px;font-weight:bold;margin-top:8px;}
+  .time-line{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+  .stat-box{background:var(--surface);border-radius:14px;padding:12px;text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  .stat-box .v{font-size:18px;font-weight:bold;}
+  .stat-box .t{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .section-title{font-size:14px;font-weight:bold;color:var(--primary-dark);margin:20px 0 8px;}
+  .hist-row{display:flex;justify-content:space-between;align-items:center;background:var(--surface);
+    border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;}
+  .hist-row .d{color:var(--muted);}
+  .hist-row .s{font-weight:bold;padding:3px 10px;border-radius:14px;color:#fff;font-size:11.5px;}
+  .actions{display:flex;gap:10px;margin-top:16px;}
+  .actions button{flex:1;padding:12px;border-radius:12px;border:none;font-size:13.5px;
+    font-weight:bold;cursor:pointer;background:var(--surface);box-shadow:0 2px 6px rgba(0,0,0,.06);}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--primary-dark);color:#fff;padding:11px 20px;border-radius:12px;
+    font-size:13px;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .notif-banner{background:var(--accent);color:var(--primary-dark);border-radius:12px;
+    padding:10px 14px;font-size:12.5px;margin-top:12px;display:flex;justify-content:space-between;
+    align-items:center;gap:10px;}
+  .notif-banner button{background:none;border:none;color:var(--primary-dark);font-weight:bold;
+    cursor:pointer;font-size:12.5px;}
+  #home,#detail{display:none;}
+  #home.active,#detail.active{display:block;}
+</style>
+</head>
+<body>
+
+<div id="home">
+  <header>
+    <div class="container">
+      <h1>ئامادەبوونی منداڵەکەم</h1>
+      <div class="date" id="todayDate"></div>
+      <a href="#" onclick="openOnboarding();return false;" style="color:#fff;text-decoration:underline;font-size:11.5px;">📲 دامەزاندن و ئاگادارکردنەوەکان</a>
+    </div>
+  </header>
+  <div class="container">
+    <div id="childrenList"></div>
+    <div class="empty" id="emptyState">ئەمە نموونەیەکە بۆ پیشاندان 👇<br>کۆدی ڕاستەقینەی منداڵەکەت لە خوارەوە زیاد بکە.</div>
+    <button class="add-btn" onclick="openAddModal()">+ زیادکردنی منداڵ</button>
+  </div>
+</div>
+
+<div id="detail">
+  <header>
+    <div class="container detail-header">
+      <button class="back" onclick="closeDetail()">→</button>
+      <h1 id="detailName" style="font-size:16px;"></h1>
+    </div>
+  </header>
+  <div class="container">
+    <div class="today-card">
+      <div class="avatar" id="detailAvatar"></div>
+      <div id="detailClass" style="color:var(--muted);font-size:13px;"></div>
+      <div class="status-line" id="detailStatusLine"></div>
+      <div class="time-line" id="detailTimeLine"></div>
+    </div>
+
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="actions">
+      <button onclick="unlinkFromDetail()">🗑 لابردنی منداڵ</button>
+    </div>
+
+    <div class="section-title">مێژووی ٣٠ ڕۆژی ڕابردوو</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<!-- Add child modal -->
+<div class="overlay" id="addOverlay">
+  <div class="sheet">
+    <h2>زیادکردنی منداڵ</h2>
+    <div class="field">
+      <label>کۆدی پەیوەستکردن (یان ژمارەی کارت)</label>
+      <input type="text" id="linkCodeInput" placeholder="بۆ نموونە: 101101">
+    </div>
+    <div class="err" id="addErr" style="display:none;"></div>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="closeAddModal()">پاشگەزبوونەوە</button>
+      <button class="btn primary" id="addSubmitBtn" onclick="submitAddStudent()">دۆزینەوە و زیادکردن</button>
+    </div>
+  </div>
+</div>
+
+<!-- First-launch onboarding modal -->
+<div class="overlay" id="onboardOverlay">
+  <div class="sheet">
+    <h2>بەخێربێیت 👋</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">بۆ باشترین بەکارهێنان، ئەم هەنگاوانە بکە:</div>
+    <div id="installSection" style="margin-bottom:14px;"></div>
+    <button class="btn primary" style="width:100%;margin-bottom:10px;" onclick="enableNotifications()">🔔 چالاککردنی ئاگادارکردنەوەکان</button>
+    <button class="btn ghost" style="width:100%;" onclick="closeOnboarding()">تێپەڕین</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Custom confirm modal (native confirm() is unreliable inside installed/standalone PWAs) -->
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet">
+    <h2 id="confirmTitle">دڵنیایت؟</h2>
+    <div class="btn-row">
+      <button class="btn ghost" id="confirmCancelBtn">پاشگەزبوونەوە</button>
+      <button class="btn primary" id="confirmOkBtn" style="background:var(--absent);">بەڵێ، لای بدە</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+<script>
+/* ---------------- Firebase config (same project used by the Android app) ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAsDs_tQemRJwwjH0m8U2YvlqZjWXHEO0k",
+  databaseURL: "https://test-school-53999-default-rtdb.firebaseio.com",
+  projectId: "test-school-53999",
+  storageBucket: "test-school-53999.firebasestorage.app",
+  appId: "1:847312056047:web:44f84a1bb21e49d0b7751a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+const STATUS_META = {
+  present:      {label:"ئامادەیە ✅",       color:"var(--present)"},
+  absent:       {label:"ئامادە نییە ❌",     color:"var(--absent)"},
+  "forgot-card":{label:"کارتی لەبیرکردووە 💳",color:"var(--forgot)"},
+  leave:        {label:"مۆڵەتە 🟡",          color:"var(--leave)"},
+  waiting:      {label:"چاوەڕوانە ⏳",        color:"var(--waiting)"}
+};
+const KURDISH_DAYS = {0:"یەکشەممە",1:"دووشەممە",2:"سێشەممە",3:"چوارشەممە",4:"پێنجشەممە",5:"هەینی",6:"شەممە"};
+
+let linked = JSON.parse(localStorage.getItem("linkedStudents") || "[]");
+let liveData = {}; // cardId -> {student, attendance}
+let openCardId = null;
+
+/* ---------------- Demo/preview student (shown before any real child is added) ---------------- */
+const DEMO_STUDENT = {cardId:"__DEMO__", name:"ئارام سەردار (نموونە)", className:"پۆلی ٥ی بنەڕەتی - نموونە", imageUrl:null};
+const DEMO_ATTENDANCE = {status:"present", time:"کاتژمێر 08:10"};
+function buildDemoHistory(){
+  const hist = []; const cal = new Date();
+  for (let i=0;i<10;i++){
+    const d = new Date(cal); d.setDate(cal.getDate()-i);
+    const dow = d.getDay(); const dateStr = d.toISOString().slice(0,10);
+    let status;
+    if (i===0) status="present";
+    else if (dow===5) status="unrecorded";
+    else if (i===3) status="absent";
+    else if (i===6) status="leave";
+    else if (i===8) status="forgot-card";
+    else status="present";
+    hist.push({dateStr, dayName:KURDISH_DAYS[dow], status, time: status==="present" ? "کاتژمێر 08:10" : null});
+  }
+  return hist;
+}
+const DEMO_HISTORY = buildDemoHistory();
+
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function saveLinked(){ localStorage.setItem("linkedStudents", JSON.stringify(linked)); }
+function showToast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function formatTodayDate(){
+  const d=new Date();
+  const day = KURDISH_DAYS[d.getDay()];
+  return `${day} - ${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+}
+document.getElementById("todayDate").textContent = formatTodayDate();
+
+/* ---------------- Auth ---------------- */
+auth.signInAnonymously().catch(e=>console.warn("auth:",e.message));
+
+/* ---------------- Notifications ---------------- */
+function enableNotifications(){
+  if (!("Notification" in window)){ showToast("ئاگادارکردنەوە پشتگیری ناکرێت لەم وێبگەڕە"); return; }
+  Notification.requestPermission().then(perm=>{
+    showToast(perm==="granted" ? "ئاگادارکردنەوەکان چالاک کران ✅" : "ڕێگەت نەدا بە ئاگادارکردنەوە");
+  });
+}
+function notifyStatusChange(name, status, time){
+  if (!("Notification" in window) || Notification.permission!=="granted") return;
+  const meta = STATUS_META[status] || STATUS_META.waiting;
+  new Notification(`ئامادەبوونی ${name}`, { body: `${meta.label}${time?" - "+time:""}` });
+}
+
+/* ---------------- First-launch onboarding: install + notifications ---------------- */
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  renderInstallSection();
+});
+window.addEventListener("appinstalled", ()=>{ deferredPrompt = null; renderInstallSection(); });
+
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+function renderInstallSection(){
+  const el = document.getElementById("installSection");
+  if (!el) return;
+  if (isStandalone()){
+    el.innerHTML = `<div style="font-size:13px;color:var(--present);">✅ ئەپەکە پێشتر دامەزراوە لەسەر ئەم مۆبایلە</div>`;
+  } else if (deferredPrompt){
+    el.innerHTML = `<button class="btn primary" style="width:100%;" onclick="installApp()">📲 دامەزاندنی ئەپ لەسەر مۆبایل</button>`;
+  } else if (isIOS()){
+    el.innerHTML = `<div style="font-size:12.5px;line-height:1.9;background:#f6f7f6;border-radius:12px;padding:12px;">
+      <b>بۆ دامەزاندن لەسەر ئایفۆن:</b><br>
+      ١. دوگمەی هاوبەشکردن ⬆️ لە خوارەوەی سافاری دابگرە<br>
+      ٢. "Add to Home Screen" هەڵبژێرە<br>
+      ٣. لە سەرەوە دوگمەی "Add" دابگرە</div>`;
+  } else {
+    el.innerHTML = `<div style="font-size:12.5px;line-height:1.9;background:#f6f7f6;border-radius:12px;padding:12px;">
+      <b>بۆ دامەزاندنی دەستی:</b><br>
+      دوگمەی سێ خاڵ (⋮) لە کڕۆم دابگرە ← "Add to Home screen" یان "Install app" هەڵبژێرە.<br>
+      <span style="color:var(--muted);">تکایە دڵنیابەرەوە یەکەم جار پەڕەکە هەموو بار بووبێت پێش داواکردنی دامەزاندن.</span></div>`;
+  }
+}
+function installApp(){
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.finally(()=>{ deferredPrompt=null; renderInstallSection(); });
+}
+function openOnboarding(){
+  renderInstallSection();
+  document.getElementById("onboardOverlay").classList.add("open");
+}
+function closeOnboarding(){
+  document.getElementById("onboardOverlay").classList.remove("open");
+  localStorage.setItem("onboardShown","1");
+}
+if (!localStorage.getItem("onboardShown")){
+  openOnboarding();
+}
+
+/* ---------------- Home rendering ---------------- */
+function renderHome(){
+  const list = document.getElementById("childrenList");
+  const empty = document.getElementById("emptyState");
+  list.innerHTML = "";
+  if (linked.length===0){
+    empty.style.display="block";
+    list.appendChild(buildDemoCard());
+    return;
+  }
+  empty.style.display="none";
+  linked.forEach(s=>{
+    const data = liveData[s.cardId] || {};
+    const student = data.student || s;
+    const att = data.attendance || {status:"waiting"};
+    const meta = STATUS_META[att.status] || STATUS_META.waiting;
+    const card = document.createElement("div");
+    card.className = "card";
+    card.onclick = ()=>openDetail(s.cardId);
+    card.innerHTML = `
+      ${avatarHtml(student)}
+      <div class="info">
+        <div class="name">${escapeHtml(displayName(student))}</div>
+        <div class="cls">${escapeHtml((student.className||"").toString().trim())}</div>
+        <div class="badge" style="background:${meta.color}">${meta.label}</div>
+      </div>
+      <button class="unlink" title="لابردن" data-unlink-card="${escapeHtml(s.cardId)}">✕</button>
+    `;
+    card.querySelector(".unlink").addEventListener("click", (ev)=>{
+      ev.stopPropagation();
+      unlinkStudent(s.cardId);
+    });
+    list.appendChild(card);
+  });
+}
+function buildDemoCard(){
+  const meta = STATUS_META[DEMO_ATTENDANCE.status];
+  const card = document.createElement("div");
+  card.className = "card";
+  card.onclick = ()=>openDemoDetail();
+  card.innerHTML = `
+    ${avatarHtml(DEMO_STUDENT)}
+    <div class="info">
+      <div class="name">${DEMO_STUDENT.name}</div>
+      <div class="cls">${DEMO_STUDENT.className}</div>
+      <div class="badge" style="background:${meta.color}">${meta.label}</div>
+    </div>
+    <span style="font-size:11px;color:var(--muted);white-space:nowrap;">نموونە</span>
+  `;
+  return card;
+}
+function openDemoDetail(){
+  openCardId = "__DEMO__";
+  document.getElementById("home").classList.remove("active");
+  document.getElementById("detail").classList.add("active");
+  document.getElementById("detailName").textContent = DEMO_STUDENT.name;
+  document.getElementById("detailClass").textContent = DEMO_STUDENT.className;
+  document.getElementById("detailAvatar").outerHTML = avatarHtml(DEMO_STUDENT).replace('class="avatar"','class="avatar" id="detailAvatar"');
+  const meta = STATUS_META[DEMO_ATTENDANCE.status];
+  const line = document.getElementById("detailStatusLine");
+  line.textContent = "ئەمڕۆ: " + meta.label;
+  line.style.color = meta.color;
+  document.getElementById("detailTimeLine").textContent = DEMO_ATTENDANCE.time;
+  renderHistory(DEMO_HISTORY);
+  renderStats(DEMO_HISTORY);
+}
+function avatarHtml(student){
+  const url = (student.imageUrl||"").toString().trim();
+  if (url){
+    return `<img class="avatar" src="${url}" onerror="this.outerHTML='${initialsFallback(student.name)}'">`;
+  }
+  return initialsFallback(student.name);
+}
+function initialsFallback(name){
+  const clean = (name||"").toString().trim();
+  const ch = clean.charAt(0) || "؟";
+  return `<div class="avatar">${ch}</div>`;
+}
+function escapeHtml(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function displayName(student){
+  const clean = (student && student.name || "").toString().trim();
+  return clean || "قوتابی (زانیارییەکانی هێشتا لە قوتابخانەوە زیاد نەکراون)";
+}
+
+/* ---------------- Realtime listeners ---------------- */
+function startListeners(cardId){
+  liveData[cardId] = liveData[cardId] || {};
+  db.ref("students/"+cardId).on("value", snap=>{
+    const v = snap.val() || {};
+    liveData[cardId].student = {
+      cardId, name:v.name||"", className:v.class||"", imageUrl:v.imageUrl||null, linkCode:v.linkCode||null
+    };
+    renderHome();
+    if (openCardId===cardId) renderDetailHeader();
+  });
+  db.ref(`attendance/${todayStr()}/records/${cardId}`).on("value", snap=>{
+    const prev = liveData[cardId].attendance;
+    const v = snap.val();
+    const status = v ? (v.status||"waiting") : "waiting";
+    const time = v && v.time ? formatTime(v.time) : null;
+    liveData[cardId].attendance = {status, time};
+    if (prev && prev.status==="waiting" && (status==="present"||status==="absent")){
+      const name = (liveData[cardId].student && liveData[cardId].student.name) || "قوتابی";
+      notifyStatusChange(name, status, time);
+    }
+    renderHome();
+    if (openCardId===cardId) renderDetailToday();
+  });
+}
+function stopListeners(cardId){
+  db.ref("students/"+cardId).off();
+  db.ref(`attendance/${todayStr()}/records/${cardId}`).off();
+  delete liveData[cardId];
+}
+linked.forEach(s=>startListeners(s.cardId));
+renderHome();
+
+/* ---------------- Add student ---------------- */
+function openAddModal(){
+  document.getElementById("linkCodeInput").value="";
+  document.getElementById("addErr").style.display="none";
+  document.getElementById("addOverlay").classList.add("open");
+}
+function closeAddModal(){ document.getElementById("addOverlay").classList.remove("open"); }
+
+function submitAddStudent(){
+  const code = document.getElementById("linkCodeInput").value.trim();
+  const errEl = document.getElementById("addErr");
+  if (!code){ errEl.textContent="تکایە کۆدی پەیوەستکردن بنووسە"; errEl.style.display="block"; return; }
+  if (linked.some(s=>s.cardId===code || s.linkCode===code)){
+    errEl.textContent="ئەم منداڵە پێشتر زیادکراوە"; errEl.style.display="block"; return;
+  }
+  errEl.style.display="none";
+  const btn = document.getElementById("addSubmitBtn");
+  btn.disabled=true; btn.textContent="گەڕان...";
+  db.ref("students").once("value").then(snap=>{
+    let found=null;
+    snap.forEach(child=>{
+      const v = child.val()||{};
+      const cardId = child.key;
+      const linkCode = (v.linkCode||"").toString().trim();
+      if (linkCode===code || cardId===code){
+        found = {cardId, name:v.name||"", className:v.class||"", imageUrl:v.imageUrl||null, linkCode};
+        return true;
+      }
+    });
+    btn.disabled=false; btn.textContent="دۆزینەوە و زیادکردن";
+    if (!found){ errEl.textContent="قوتابی نەدۆزرایەوە"; errEl.style.display="block"; return; }
+    linked.push({cardId:found.cardId, linkCode:found.linkCode, name:found.name, className:found.className,
+      imageUrl:found.imageUrl, addedAt:Date.now()});
+    saveLinked();
+    startListeners(found.cardId);
+    renderHome();
+    closeAddModal();
+    showToast(`${found.name||"قوتابی"} زیادکرا ✅`);
+  }).catch(e=>{
+    btn.disabled=false; btn.textContent="دۆزینەوە و زیادکردن";
+    errEl.textContent="هەڵەیەک ڕوویدا، دووبارە هەوڵ بدەوە"; errEl.style.display="block";
+  });
+}
+
+function unlinkStudent(cardId){
+  showConfirm("دڵنیایت لە لابردنی ئەم منداڵە؟", ()=>{
+    linked = linked.filter(s=>s.cardId!==cardId);
+    saveLinked();
+    stopListeners(cardId);
+    if (openCardId===cardId) closeDetail();
+    renderHome();
+    showToast("منداڵ لابرا");
+  });
+}
+function showConfirm(message, onConfirm){
+  document.getElementById("confirmTitle").textContent = message;
+  const overlay = document.getElementById("confirmOverlay");
+  const okBtn = document.getElementById("confirmOkBtn");
+  const cancelBtn = document.getElementById("confirmCancelBtn");
+  const cleanup = ()=>{
+    overlay.classList.remove("open");
+    okBtn.removeEventListener("click", onOk);
+    cancelBtn.removeEventListener("click", onCancel);
+  };
+  const onOk = ()=>{ cleanup(); onConfirm(); };
+  const onCancel = ()=>{ cleanup(); };
+  okBtn.addEventListener("click", onOk);
+  cancelBtn.addEventListener("click", onCancel);
+  overlay.classList.add("open");
+}
+function unlinkFromDetail(){
+  if (!openCardId) return;
+  if (openCardId==="__DEMO__"){ showToast("ئەمە نموونەیەکە، پێویست بە لابردن ناکات"); return; }
+  unlinkStudent(openCardId);
+}
+
+/* ---------------- Detail view ---------------- */
+function openDetail(cardId){
+  openCardId = cardId;
+  document.getElementById("home").classList.remove("active");
+  document.getElementById("detail").classList.add("active");
+  renderDetailHeader();
+  renderDetailToday();
+  loadHistory(cardId);
+}
+function closeDetail(){
+  openCardId = null;
+  document.getElementById("detail").classList.remove("active");
+  document.getElementById("home").classList.add("active");
+}
+function renderDetailHeader(){
+  const s = (liveData[openCardId]&&liveData[openCardId].student) || linked.find(x=>x.cardId===openCardId) || {};
+  document.getElementById("detailName").textContent = s.name || displayName(s);
+  document.getElementById("detailClass").textContent = s.className || "";
+  document.getElementById("detailAvatar").outerHTML = avatarHtml(s).replace('class="avatar"','class="avatar" id="detailAvatar"');
+}
+function renderDetailToday(){
+  const att = (liveData[openCardId]&&liveData[openCardId].attendance) || {status:"waiting"};
+  const meta = STATUS_META[att.status] || STATUS_META.waiting;
+  const line = document.getElementById("detailStatusLine");
+  line.textContent = "ئەمڕۆ: " + meta.label;
+  line.style.color = meta.color;
+  document.getElementById("detailTimeLine").textContent = att.time || "";
+}
+function formatTime(raw){
+  try{
+    let d;
+    if (typeof raw === "number") d = new Date(raw);
+    else d = new Date(raw);
+    if (isNaN(d.getTime())) return null;
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    return `کاتژمێر ${hh}:${mm}`;
+  }catch(e){ return null; }
+}
+
+function loadHistory(cardId){
+  const list = document.getElementById("historyList");
+  const statGrid = document.getElementById("statGrid");
+  list.innerHTML = "<div class='empty' style='padding:20px 0;'>بارکردن...</div>";
+  const days = 30;
+  const promises = [];
+  const dates = [];
+  const cal = new Date();
+  for (let i=0;i<days;i++){
+    const d = new Date(cal); d.setDate(cal.getDate()-i);
+    const dateStr = d.toISOString().slice(0,10);
+    dates.push({dateStr, dow:d.getDay(), isToday:i===0});
+    promises.push(db.ref(`attendance/${dateStr}/records/${cardId}`).once("value"));
+  }
+  Promise.all(promises).then(snaps=>{
+    const history = snaps.map((snap,i)=>{
+      const v = snap.val();
+      const {dateStr,dow,isToday} = dates[i];
+      let status = "waiting", time=null;
+      if (v){ status = v.status||"present"; time = v.time?formatTime(v.time):null; }
+      else if (!isToday && dow!==5){ status="unrecorded"; } // Friday(5)=weekend, else unknown/not recorded
+      return {dateStr, dayName:KURDISH_DAYS[dow], status, time, isToday};
+    });
+    renderHistory(history);
+    renderStats(history);
+  }).catch(e=>{
+    list.innerHTML = "<div class='empty'>نەتوانرا مێژوو بار بکرێت</div>";
+  });
+}
+function renderHistory(history){
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+  history.forEach(h=>{
+    let meta;
+    if (h.status==="unrecorded") meta = {label:"تۆمار نەکراوە", color:"var(--waiting)"};
+    else if (h.dowIsFriday) meta = {label:"هەینی", color:"var(--waiting)"};
+    else meta = STATUS_META[h.status] || STATUS_META.waiting;
+    const row = document.createElement("div");
+    row.className="hist-row";
+    row.innerHTML = `<span class="d">${h.dayName} - ${h.dateStr}</span>
+      <span class="s" style="background:${meta.color}">${meta.label}${h.time?" · "+h.time:""}</span>`;
+    list.appendChild(row);
+  });
+}
+function renderStats(history){
+  const valid = history.filter(h=>h.status!=="waiting" && h.status!=="unrecorded");
+  const present = valid.filter(h=>h.status==="present").length;
+  const absent = valid.filter(h=>h.status==="absent").length;
+  const leave = valid.filter(h=>h.status==="leave").length;
+  const forgot = valid.filter(h=>h.status==="forgot-card").length;
+  const total = Math.max(valid.length,1);
+  const rate = Math.round((present/total)*100);
+
+  let currentStreak=0, bestStreak=0, temp=0, broken=false;
+  history.forEach(h=>{
+    if (h.status==="present"){ temp++; if(!broken) currentStreak++; if(temp>bestStreak) bestStreak=temp; }
+    else if (h.status!=="waiting" && h.status!=="unrecorded"){ broken=true; temp=0; }
+  });
+  bestStreak = Math.max(bestStreak, currentStreak);
+
+  const grid = document.getElementById("statGrid");
+  grid.innerHTML = `
+    ${statBox(rate+"%","ڕێژەی ئامادەبوون", "var(--present)")}
+    ${statBox(present+" ڕۆژ","ئامادەبوون","var(--present)")}
+    ${statBox(absent+" ڕۆژ","ئامادە نەبوون","var(--absent)")}
+    ${statBox(leave+" ڕۆژ","مۆڵەت","var(--leave)")}
+    ${statBox(forgot+" ڕۆژ","کارتی لەبیرکردوو","var(--forgot)")}
+    ${statBox(currentStreak+" ڕۆژ","زنجیرەی ئێستا","var(--primary)")}
+  `;
+}
+function statBox(v,t,c){
+  return `<div class="stat-box"><div class="v" style="color:${c}">${v}</div><div class="t">${t}</div></div>`;
+}
+
+/* ---------------- init ---------------- */
+document.getElementById("home").classList.add("active");
+
+if ("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
