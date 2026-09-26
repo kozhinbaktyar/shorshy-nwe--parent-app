@@ -1,1 +1,0 @@
-# shorshy-nwe--parent-app
