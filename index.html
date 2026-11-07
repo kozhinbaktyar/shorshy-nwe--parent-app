@@ -144,7 +144,6 @@
   </div>
 </div>
 
-<!-- Add child modal -->
 <div class="overlay" id="addOverlay">
   <div class="sheet">
     <h2>زیادکردنی منداڵ</h2>
@@ -160,7 +159,6 @@
   </div>
 </div>
 
-<!-- First-launch onboarding modal -->
 <div class="overlay" id="onboardOverlay">
   <div class="sheet">
     <h2>بەخێربێیت 👋</h2>
@@ -173,7 +171,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Custom confirm modal (native confirm() is unreliable inside installed/standalone PWAs) -->
 <div class="overlay" id="confirmOverlay">
   <div class="sheet">
     <h2 id="confirmTitle">دڵنیایت؟</h2>
@@ -184,13 +181,11 @@
   </div>
 </div>
 
-<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 
 <script>
-/* ---------------- Firebase config (same project used by the Android app) ---------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyAsDs_tQemRJwwjH0m8U2YvlqZjWXHEO0k",
   databaseURL: "https://test-school-53999-default-rtdb.firebaseio.com",
@@ -212,10 +207,9 @@ const STATUS_META = {
 const KURDISH_DAYS = {0:"یەکشەممە",1:"دووشەممە",2:"سێشەممە",3:"چوارشەممە",4:"پێنجشەممە",5:"هەینی",6:"شەممە"};
 
 let linked = JSON.parse(localStorage.getItem("linkedStudents") || "[]");
-let liveData = {}; // cardId -> {student, attendance}
+let liveData = {};
 let openCardId = null;
 
-/* ---------------- Demo/preview student (shown before any real child is added) ---------------- */
 const DEMO_STUDENT = {cardId:"__DEMO__", name:"ئارام سەردار (نموونە)", className:"پۆلی ٥ی بنەڕەتی - نموونە", imageUrl:null};
 const DEMO_ATTENDANCE = {status:"present", time:"کاتژمێر 08:10"};
 function buildDemoHistory(){
@@ -250,10 +244,8 @@ function formatTodayDate(){
 }
 document.getElementById("todayDate").textContent = formatTodayDate();
 
-/* ---------------- Auth ---------------- */
 auth.signInAnonymously().catch(e=>console.warn("auth:",e.message));
 
-/* ---------------- Notifications ---------------- */
 function enableNotifications(){
   if (!("Notification" in window)){ showToast("ئاگادارکردنەوە پشتگیری ناکرێت لەم وێبگەڕە"); return; }
   Notification.requestPermission().then(perm=>{
@@ -266,7 +258,6 @@ function notifyStatusChange(name, status, time){
   new Notification(`ئامادەبوونی ${name}`, { body: `${meta.label}${time?" - "+time:""}` });
 }
 
-/* ---------------- First-launch onboarding: install + notifications ---------------- */
 let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt", (e)=>{
   e.preventDefault();
@@ -297,8 +288,7 @@ function renderInstallSection(){
   } else {
     el.innerHTML = `<div style="font-size:12.5px;line-height:1.9;background:#f6f7f6;border-radius:12px;padding:12px;">
       <b>بۆ دامەزاندنی دەستی:</b><br>
-      دوگمەی سێ خاڵ (⋮) لە کڕۆم دابگرە ← "Add to Home screen" یان "Install app" هەڵبژێرە.<br>
-      <span style="color:var(--muted);">تکایە دڵنیابەرەوە یەکەم جار پەڕەکە هەموو بار بووبێت پێش داواکردنی دامەزاندن.</span></div>`;
+      دوگمەی سێ خاڵ (⋮) لە کڕۆم دابگرە ← "Add to Home screen" یان "Install app" هەڵبژێرە.</div>`;
   }
 }
 function installApp(){
@@ -318,7 +308,6 @@ if (!localStorage.getItem("onboardShown")){
   openOnboarding();
 }
 
-/* ---------------- Home rendering ---------------- */
 function renderHome(){
   const list = document.getElementById("childrenList");
   const empty = document.getElementById("emptyState");
@@ -399,10 +388,9 @@ function initialsFallback(name){
 function escapeHtml(s){ return (s||"").toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function displayName(student){
   const clean = (student && student.name || "").toString().trim();
-  return clean || "قوتابی (زانیارییەکانی هێشتا لە قوتابخانەوە زیاد نەکراون)";
+  return clean || "قوتابی";
 }
 
-/* ---------------- Realtime listeners ---------------- */
 function startListeners(cardId){
   liveData[cardId] = liveData[cardId] || {};
   db.ref("students/"+cardId).on("value", snap=>{
@@ -435,7 +423,6 @@ function stopListeners(cardId){
 linked.forEach(s=>startListeners(s.cardId));
 renderHome();
 
-/* ---------------- Add student ---------------- */
 function openAddModal(){
   document.getElementById("linkCodeInput").value="";
   document.getElementById("addErr").style.display="none";
@@ -511,7 +498,6 @@ function unlinkFromDetail(){
   unlinkStudent(openCardId);
 }
 
-/* ---------------- Detail view ---------------- */
 function openDetail(cardId){
   openCardId = cardId;
   document.getElementById("home").classList.remove("active");
@@ -541,9 +527,7 @@ function renderDetailToday(){
 }
 function formatTime(raw){
   try{
-    let d;
-    if (typeof raw === "number") d = new Date(raw);
-    else d = new Date(raw);
+    let d = new Date(raw);
     if (isNaN(d.getTime())) return null;
     const hh = String(d.getHours()).padStart(2,"0");
     const mm = String(d.getMinutes()).padStart(2,"0");
@@ -553,7 +537,6 @@ function formatTime(raw){
 
 function loadHistory(cardId){
   const list = document.getElementById("historyList");
-  const statGrid = document.getElementById("statGrid");
   list.innerHTML = "<div class='empty' style='padding:20px 0;'>بارکردن...</div>";
   const days = 30;
   const promises = [];
@@ -571,7 +554,7 @@ function loadHistory(cardId){
       const {dateStr,dow,isToday} = dates[i];
       let status = "waiting", time=null;
       if (v){ status = v.status||"present"; time = v.time?formatTime(v.time):null; }
-      else if (!isToday && dow!==5){ status="unrecorded"; } // Friday(5)=weekend, else unknown/not recorded
+      else if (!isToday && dow!==5){ status="unrecorded"; }
       return {dateStr, dayName:KURDISH_DAYS[dow], status, time, isToday};
     });
     renderHistory(history);
@@ -586,7 +569,6 @@ function renderHistory(history){
   history.forEach(h=>{
     let meta;
     if (h.status==="unrecorded") meta = {label:"تۆمار نەکراوە", color:"var(--waiting)"};
-    else if (h.dowIsFriday) meta = {label:"هەینی", color:"var(--waiting)"};
     else meta = STATUS_META[h.status] || STATUS_META.waiting;
     const row = document.createElement("div");
     row.className="hist-row";
@@ -625,7 +607,6 @@ function statBox(v,t,c){
   return `<div class="stat-box"><div class="v" style="color:${c}">${v}</div><div class="t">${t}</div></div>`;
 }
 
-/* ---------------- init ---------------- */
 document.getElementById("home").classList.add("active");
 
 if ("serviceWorker" in navigator){
