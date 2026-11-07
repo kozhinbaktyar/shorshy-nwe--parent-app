@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ckb" dir="rtl">
 <head>
@@ -60,13 +61,6 @@
     font-weight:bold;cursor:pointer;}
   .btn.primary{background:var(--primary);color:#fff;}
   .btn.ghost{background:#eef1ef;color:var(--ink);}
-  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
-  .chip{padding:8px 12px;border-radius:20px;background:#eef1ef;font-size:13px;cursor:pointer;
-    border:1px solid transparent;}
-  .chip.sel{background:var(--primary);color:#fff;}
-  .days-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-  .days-row button{width:34px;height:34px;border-radius:50%;border:1px solid #dfe3e0;
-    background:#fff;font-size:16px;cursor:pointer;}
 
   .detail-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
   .detail-header .back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;}
@@ -92,18 +86,13 @@
     background:var(--primary-dark);color:#fff;padding:11px 20px;border-radius:12px;
     font-size:13px;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;}
   .toast.show{opacity:1;}
-  .notif-banner{background:var(--accent);color:var(--primary-dark);border-radius:12px;
-    padding:10px 14px;font-size:12.5px;margin-top:12px;display:flex;justify-content:space-between;
-    align-items:center;gap:10px;}
-  .notif-banner button{background:none;border:none;color:var(--primary-dark);font-weight:bold;
-    cursor:pointer;font-size:12.5px;}
   #home,#detail{display:none;}
   #home.active,#detail.active{display:block;}
 </style>
 </head>
 <body>
 
-<div id="home">
+<div id="home" class="active">
   <header>
     <div class="container">
       <h1>ئامادەبوونی منداڵەکەم</h1>
@@ -113,7 +102,7 @@
   </header>
   <div class="container">
     <div id="childrenList"></div>
-    <div class="empty" id="emptyState">ئەمە نموونەیەکە بۆ پیشاندان 👇<br>کۆدی ڕاستەقینەی منداڵەکەت لە خوارەوە زیاد بکە.</div>
+    <div class="empty" id="emptyState">هیچ منداڵێک نەبەستراوەتەوە 👇<br>دوگمەی زیادکردن لێبدە بۆ بەستنەوەی منداڵەکەت.</div>
     <button class="add-btn" onclick="openAddModal()">+ زیادکردنی منداڵ</button>
   </div>
 </div>
@@ -121,7 +110,7 @@
 <div id="detail">
   <header>
     <div class="container detail-header">
-      <button class="back" onclick="closeDetail()">→</button>
+      <button class="back" onclick="closeDetail()">←</button>
       <h1 id="detailName" style="font-size:16px;"></h1>
     </div>
   </header>
@@ -210,26 +199,6 @@ let linked = JSON.parse(localStorage.getItem("linkedStudents") || "[]");
 let liveData = {};
 let openCardId = null;
 
-const DEMO_STUDENT = {cardId:"__DEMO__", name:"ئارام سەردار (نموونە)", className:"پۆلی ٥ی بنەڕەتی - نموونە", imageUrl:null};
-const DEMO_ATTENDANCE = {status:"present", time:"کاتژمێر 08:10"};
-function buildDemoHistory(){
-  const hist = []; const cal = new Date();
-  for (let i=0;i<10;i++){
-    const d = new Date(cal); d.setDate(cal.getDate()-i);
-    const dow = d.getDay(); const dateStr = d.toISOString().slice(0,10);
-    let status;
-    if (i===0) status="present";
-    else if (dow===5) status="unrecorded";
-    else if (i===3) status="absent";
-    else if (i===6) status="leave";
-    else if (i===8) status="forgot-card";
-    else status="present";
-    hist.push({dateStr, dayName:KURDISH_DAYS[dow], status, time: status==="present" ? "کاتژمێر 08:10" : null});
-  }
-  return hist;
-}
-const DEMO_HISTORY = buildDemoHistory();
-
 function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function saveLinked(){ localStorage.setItem("linkedStudents", JSON.stringify(linked)); }
 function showToast(msg){
@@ -304,9 +273,6 @@ function closeOnboarding(){
   document.getElementById("onboardOverlay").classList.remove("open");
   localStorage.setItem("onboardShown","1");
 }
-if (!localStorage.getItem("onboardShown")){
-  openOnboarding();
-}
 
 function renderHome(){
   const list = document.getElementById("childrenList");
@@ -314,7 +280,6 @@ function renderHome(){
   list.innerHTML = "";
   if (linked.length===0){
     empty.style.display="block";
-    list.appendChild(buildDemoCard());
     return;
   }
   empty.style.display="none";
@@ -342,37 +307,7 @@ function renderHome(){
     list.appendChild(card);
   });
 }
-function buildDemoCard(){
-  const meta = STATUS_META[DEMO_ATTENDANCE.status];
-  const card = document.createElement("div");
-  card.className = "card";
-  card.onclick = ()=>openDemoDetail();
-  card.innerHTML = `
-    ${avatarHtml(DEMO_STUDENT)}
-    <div class="info">
-      <div class="name">${DEMO_STUDENT.name}</div>
-      <div class="cls">${DEMO_STUDENT.className}</div>
-      <div class="badge" style="background:${meta.color}">${meta.label}</div>
-    </div>
-    <span style="font-size:11px;color:var(--muted);white-space:nowrap;">نموونە</span>
-  `;
-  return card;
-}
-function openDemoDetail(){
-  openCardId = "__DEMO__";
-  document.getElementById("home").classList.remove("active");
-  document.getElementById("detail").classList.add("active");
-  document.getElementById("detailName").textContent = DEMO_STUDENT.name;
-  document.getElementById("detailClass").textContent = DEMO_STUDENT.className;
-  document.getElementById("detailAvatar").outerHTML = avatarHtml(DEMO_STUDENT).replace('class="avatar"','class="avatar" id="detailAvatar"');
-  const meta = STATUS_META[DEMO_ATTENDANCE.status];
-  const line = document.getElementById("detailStatusLine");
-  line.textContent = "ئەمڕۆ: " + meta.label;
-  line.style.color = meta.color;
-  document.getElementById("detailTimeLine").textContent = DEMO_ATTENDANCE.time;
-  renderHistory(DEMO_HISTORY);
-  renderStats(DEMO_HISTORY);
-}
+
 function avatarHtml(student){
   const url = (student.imageUrl||"").toString().trim();
   if (url){
@@ -494,7 +429,6 @@ function showConfirm(message, onConfirm){
 }
 function unlinkFromDetail(){
   if (!openCardId) return;
-  if (openCardId==="__DEMO__"){ showToast("ئەمە نموونەیەکە، پێویست بە لابردن ناکات"); return; }
   unlinkStudent(openCardId);
 }
 
@@ -606,8 +540,6 @@ function renderStats(history){
 function statBox(v,t,c){
   return `<div class="stat-box"><div class="v" style="color:${c}">${v}</div><div class="t">${t}</div></div>`;
 }
-
-document.getElementById("home").classList.add("active");
 
 if ("serviceWorker" in navigator){
   window.addEventListener("load", ()=>{
