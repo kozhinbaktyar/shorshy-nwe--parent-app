@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ckb" dir="rtl">
 <head>
@@ -199,6 +198,12 @@ let linked = JSON.parse(localStorage.getItem("linkedStudents") || "[]");
 let liveData = {};
 let openCardId = null;
 
+// پاککردنەوەی تێکست لە هێما و نیشانە نەخوازراوەکان
+function cleanText(txt) {
+    if (!txt) return "";
+    return txt.toString().replace(/[<>\"']/g, "").trim();
+}
+
 function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function saveLinked(){ localStorage.setItem("linkedStudents", JSON.stringify(linked)); }
 function showToast(msg){
@@ -294,8 +299,8 @@ function renderHome(){
     card.innerHTML = `
       ${avatarHtml(student)}
       <div class="info">
-        <div class="name">${escapeHtml(displayName(student))}</div>
-        <div class="cls">${escapeHtml((student.className||"").toString().trim())}</div>
+        <div class="name">${escapeHtml(cleanText(displayName(student)))}</div>
+        <div class="cls" style="direction:rtl; unicode-bidi:embed;">${escapeHtml(cleanText(student.className))}</div>
         <div class="badge" style="background:${meta.color}">${meta.label}</div>
       </div>
       <button class="unlink" title="لابردن" data-unlink-card="${escapeHtml(s.cardId)}">✕</button>
@@ -447,8 +452,8 @@ function closeDetail(){
 }
 function renderDetailHeader(){
   const s = (liveData[openCardId]&&liveData[openCardId].student) || linked.find(x=>x.cardId===openCardId) || {};
-  document.getElementById("detailName").textContent = s.name || displayName(s);
-  document.getElementById("detailClass").textContent = s.className || "";
+  document.getElementById("detailName").textContent = cleanText(s.name || displayName(s));
+  document.getElementById("detailClass").textContent = cleanText(s.className || "");
   document.getElementById("detailAvatar").outerHTML = avatarHtml(s).replace('class="avatar"','class="avatar" id="detailAvatar"');
 }
 function renderDetailToday(){
